@@ -106,7 +106,7 @@ URL_NEYTUBE="https://raw.githubusercontent.com/Koyney/Ney-Tube/refs/heads/main/N
 PY_DIR="$HOME/.local/Koyney/Ney-Menu"
 NEYMENU_PATH="$HOME/.local/Koyney/Ney-Menu.py"
 NEYTUBE_PATH="$PY_DIR/Ney-Tube.py"
-NEYFLIX_PATH="$PY_DIR/Co-flix.py"
+COFLIX_PATH="$PY_DIR/Co-flix.py"
 
 _CACHE_DIR="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/ney-status-cache"
 _CACHE_TTL=300
@@ -236,12 +236,12 @@ file_status_line() {
 }
 
 # ── Statut Co-flix (local uniquement) — affiché SEULEMENT si le fichier existe
-file_status_neyflix() {
-    [ ! -f "$NEYFLIX_PATH" ] && return
+file_status_coflix() {
+    [ ! -f "$COFLIX_PATH" ] && return
     local lsize
-    lsize=$(wc -c < "$NEYFLIX_PATH" | tr -d ' ')
+    lsize=$(wc -c < "$COFLIX_PATH" | tr -d ' ')
     local ldate
-    ldate=$(_file_date "$NEYFLIX_PATH")
+    ldate=$(_file_date "$COFLIX_PATH")
     local size_fmt
     if   [ "$lsize" -gt 999999 ] 2>/dev/null; then size_fmt="$(( lsize/1024 ))Ko"
     elif [ "$lsize" -gt 999    ] 2>/dev/null; then size_fmt="$(( lsize/1024 ))Ko"
@@ -305,10 +305,10 @@ fetch_script() {
 }
 
 # ── Vérifie Co-flix.py : si présent et ~155Ko (±1Ko) → installe tor ─────────
-_check_neyflix_tor() {
-    [ ! -f "$NEYFLIX_PATH" ] && return
+_check_coflix_tor() {
+    [ ! -f "$COFLIX_PATH" ] && return
     local fsize
-    fsize=$(wc -c < "$NEYFLIX_PATH" | tr -d ' ')
+    fsize=$(wc -c < "$COFLIX_PATH" | tr -d ' ')
     local lo=$(( 154 * 1024 ))
     local hi=$(( 156 * 1024 ))
     if [ "$fsize" -ge "$lo" ] && [ "$fsize" -le "$hi" ]; then
@@ -350,7 +350,7 @@ print_menu() {
     sec_hdr "${C1}" "ÉTAT DES FICHIERS"
     file_status_line "$NEYMENU_PATH" "$URL_NEYMENU" "Ney-Menu.py"
     file_status_line "$NEYTUBE_PATH" "$URL_NEYTUBE" "Ney-Tube.py"
-    file_status_neyflix   # affiché seulement si Co-flix.py existe
+    file_status_coflix   # affiché seulement si Co-flix.py existe
     nl
 
     # ── Section PAR SCRIPT ───────────────────────────────────────────────────
@@ -466,7 +466,7 @@ curl -sL \
 EOF
 
     # Raccourci Co-flix uniquement si le fichier existe
-    if [ -f "$NEYFLIX_PATH" ]; then
+    if [ -f "$COFLIX_PATH" ]; then
         cat > "$HOME/.shortcuts/Co-flix.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 python3 ~/.local/Koyney/Ney-Menu/Co-flix.py
@@ -487,7 +487,7 @@ setup_alias() {
     nl
     echo -e "   ${C1}${BOLD}ney${RESET}        ${DIM}→ lance Ney-Menu${RESET}"
     echo -e "   ${C1}${BOLD}neytube${RESET}    ${DIM}→ lance Ney-Tube${RESET}"
-    [ -f "$NEYFLIX_PATH" ] && echo -e "   ${C1}${BOLD}neyflix${RESET}    ${DIM}→ lance Co-flix${RESET}"
+    [ -f "$COFLIX_PATH" ] && echo -e "   ${C1}${BOLD}coflix${RESET}    ${DIM}→ lance Co-flix${RESET}"
     echo -e "   ${C1}${BOLD}neyupdate${RESET}  ${DIM}→ relance cet installateur${RESET}"
     nl
     printf "  ${C1}${BOLD}›› ${RESET}Créer / mettre à jour les alias ? ${DIM}[o]${RESET} : "
@@ -501,9 +501,9 @@ alias ney="python3 ~/.local/Koyney/Ney-Menu.py"
 alias neytube="python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.py"
 alias neyupdate='curl -sL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh?t=$(date +%s)" -o ~/Ney-install.sh && chmod +x ~/Ney-install.sh && bash ~/Ney-install.sh'
 ALIASES
-        # Alias neyflix ajouté uniquement si Co-flix.py existe
-        if [ -f "$NEYFLIX_PATH" ]; then
-            echo 'alias neyflix="python3 ~/.local/Koyney/Ney-Menu/Co-flix.py"' >> "$HOME/.bashrc"
+        # Alias coflix ajouté uniquement si Co-flix.py existe
+        if [ -f "$COFLIX_PATH" ]; then
+            echo 'alias coflix="python3 ~/.local/Koyney/Ney-Menu/Co-flix.py"' >> "$HOME/.bashrc"
         fi
         echo '# ── KOYNEY END ────────────────────────────────────────' >> "$HOME/.bashrc"
         line_ok "Alias mis à jour dans ${DIM}~/.bashrc${RESET}"
@@ -552,7 +552,7 @@ full_install() {
     section "Scripts"
     fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.py"
     fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.py"
-    _check_neyflix_tor
+    _check_coflix_tor
 
     setup_storage
     setup_shortcuts
@@ -569,7 +569,7 @@ update_all_scripts() {
     section "Mise à jour de tous les scripts"
     fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.py"
     fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.py"
-    _check_neyflix_tor
+    _check_coflix_tor
     nl; pause
 }
 
