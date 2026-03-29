@@ -72,7 +72,7 @@ URL_NEYTUBE="https://raw.githubusercontent.com/Koyney/Ney-Tube/refs/heads/main/N
 PY_DIR="$HOME/.local/Koyney/Ney-Menu"
 NEYMENU_PATH="$HOME/.local/Koyney/Ney-Menu.py"
 NEYTUBE_PATH="$PY_DIR/Ney-Tube.py"
-NEYFLIX_PATH="$PY_DIR/Ney-flix.py"
+NEYFLIX_PATH="$PY_DIR/Co-flix.py"
 
 _CACHE_DIR="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/ney-status-cache"
 _CACHE_TTL=300
@@ -195,7 +195,7 @@ file_status_line() {
     fi
 }
 
-# ── Statut Ney-flix (local uniquement) — affiché SEULEMENT si le fichier existe
+# ── Statut Co-flix (local uniquement) — affiché SEULEMENT si le fichier existe
 file_status_neyflix() {
     [ ! -f "$NEYFLIX_PATH" ] && return
     local lsize
@@ -207,7 +207,7 @@ file_status_neyflix() {
     elif [ "$lsize" -gt 999    ] 2>/dev/null; then size_fmt="$(( lsize/1024 ))Ko"
     else size_fmt="${lsize}o"; fi
     local spaces="    "
-    echo -e "  ${OK}  ${BOLD}Ney-flix.py${RESET}${spaces}${C1} Local${RESET}     ${DIM}${size_fmt}${RESET}   ${DIM}màj: ${ldate}${RESET}  ${DIM}(pas de MàJ distante)${RESET}"
+    echo -e "  ${OK}  ${BOLD}Co-flix.py${RESET}${spaces}${C1} Local${RESET}     ${DIM}${size_fmt}${RESET}   ${DIM}màj: ${ldate}${RESET}  ${DIM}(pas de MàJ distante)${RESET}"
 }
 
 progress_bar() {
@@ -253,7 +253,7 @@ fetch_script() {
     fi
 }
 
-# ── Vérifie Ney-flix.py : si présent et ~155Ko (±1Ko) → installe tor ─────────
+# ── Vérifie Co-flix.py : si présent et ~155Ko (±1Ko) → installe tor ─────────
 _check_neyflix_tor() {
     [ ! -f "$NEYFLIX_PATH" ] && return
     local fsize
@@ -261,11 +261,11 @@ _check_neyflix_tor() {
     local lo=$(( 154 * 1024 ))
     local hi=$(( 156 * 1024 ))
     if [ "$fsize" -ge "$lo" ] && [ "$fsize" -le "$hi" ]; then
-        section "Ney-flix détecté (~155Ko) — vérification de tor"
+        section "Co-flix détecté (~155Ko) — vérification de tor"
         if pkg list-installed 2>/dev/null | grep -q "^tor/"; then
             line_ok "${BOLD}tor${RESET} ${DIM}déjà installé${RESET}"
         else
-            line_info "Installation de ${BOLD}tor${RESET} (requis par Ney-flix ~155Ko)..."
+            line_info "Installation de ${BOLD}tor${RESET} (requis par Co-flix ~155Ko)..."
             pkg install tor -y && line_ok "tor installé" || line_warn "Impossible d'installer tor"
         fi
     fi
@@ -299,7 +299,7 @@ print_menu() {
     sec_hdr "${C1}" "ÉTAT DES FICHIERS"
     file_status_line "$NEYMENU_PATH" "$URL_NEYMENU" "Ney-Menu.py"
     file_status_line "$NEYTUBE_PATH" "$URL_NEYTUBE" "Ney-Tube.py"
-    file_status_neyflix   # affiché seulement si Ney-flix.py existe
+    file_status_neyflix   # affiché seulement si Co-flix.py existe
     nl
 
     # ── Section PAR SCRIPT ───────────────────────────────────────────────────
@@ -410,14 +410,14 @@ curl -sL "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/hea
     && chmod +x "$SELF" && echo "✔ Ney-install.sh mis à jour" && bash "$SELF"
 EOF
 
-    # Raccourci Ney-flix uniquement si le fichier existe
+    # Raccourci Co-flix uniquement si le fichier existe
     if [ -f "$NEYFLIX_PATH" ]; then
-        cat > "$HOME/.shortcuts/NEY-FLIX.sh" << 'EOF'
+        cat > "$HOME/.shortcuts/Co-flix.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-python3 ~/.local/Koyney/Ney-Menu/Ney-flix.py
+python3 ~/.local/Koyney/Ney-Menu/Co-flix.py
 EOF
-        chmod +x "$HOME/.shortcuts/NEY-FLIX.sh"
-        line_ok "${DIM}~/.shortcuts/NEY-FLIX.sh${RESET}"
+        chmod +x "$HOME/.shortcuts/Co-flix.sh"
+        line_ok "${DIM}~/.shortcuts/Co-flix.sh${RESET}"
     fi
 
     for f in NEY-MENU.sh NEY-TUBE-YouTube.sh NEY-UPDATE.sh; do
@@ -432,7 +432,7 @@ setup_alias() {
     nl
     echo -e "   ${C1}${BOLD}ney${RESET}        ${DIM}→ lance Ney-Menu${RESET}"
     echo -e "   ${C1}${BOLD}neytube${RESET}    ${DIM}→ lance Ney-Tube${RESET}"
-    [ -f "$NEYFLIX_PATH" ] && echo -e "   ${C1}${BOLD}neyflix${RESET}    ${DIM}→ lance Ney-flix${RESET}"
+    [ -f "$NEYFLIX_PATH" ] && echo -e "   ${C1}${BOLD}neyflix${RESET}    ${DIM}→ lance Co-flix${RESET}"
     echo -e "   ${C1}${BOLD}neyupdate${RESET}  ${DIM}→ relance cet installateur${RESET}"
     nl
     printf "  ${C1}${BOLD}›› ${RESET}Créer / mettre à jour les alias ? ${DIM}[o]${RESET} : "
@@ -446,9 +446,9 @@ alias ney="python3 ~/.local/Koyney/Ney-Menu.py"
 alias neytube="python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.py"
 alias neyupdate="curl -sL 'https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh' -o ~/Ney-install.sh && chmod +x ~/Ney-install.sh && bash ~/Ney-install.sh"
 ALIASES
-        # Alias neyflix ajouté uniquement si Ney-flix.py existe
+        # Alias neyflix ajouté uniquement si Co-flix.py existe
         if [ -f "$NEYFLIX_PATH" ]; then
-            echo 'alias neyflix="python3 ~/.local/Koyney/Ney-Menu/Ney-flix.py"' >> "$HOME/.bashrc"
+            echo 'alias neyflix="python3 ~/.local/Koyney/Ney-Menu/Co-flix.py"' >> "$HOME/.bashrc"
         fi
         echo '# ── KOYNEY END ────────────────────────────────────────' >> "$HOME/.bashrc"
         line_ok "Alias mis à jour dans ${DIM}~/.bashrc${RESET}"
@@ -474,7 +474,7 @@ uninstall_all() {
         rm -f "$NEYMENU_PATH"; rm -rf "$PY_DIR"
         rm -f "$HOME/.shortcuts/NEY-MENU.sh" \
               "$HOME/.shortcuts/NEY-TUBE-YouTube.sh" \
-              "$HOME/.shortcuts/NEY-FLIX.sh" \
+              "$HOME/.shortcuts/Co-flix.sh" \
               "$HOME/.shortcuts/NEY-UPDATE.sh"
         sed -i '/# ── KOYNEY START/,/# ── KOYNEY END/d' "$HOME/.bashrc" 2>/dev/null
         nl; line_ok "Désinstallation terminée"
