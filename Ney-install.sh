@@ -100,12 +100,12 @@ OK="${C1}✔${RESET}"; WARN="${C3}⚠${RESET}"; ERR='\033[38;5;196m✘'"${RESET}
 INFO="${C2}›${RESET}"; ARR="${C1}▶${RESET}"
 
 # ── URLs ──────────────────────────────────────────────────────────────────────
-URL_NEYMENU="https://raw.githubusercontent.com/Koyney/Ney-Menu/refs/heads/main/Ney-Menu.py"
-URL_NEYTUBE="https://raw.githubusercontent.com/Koyney/Ney-Tube/refs/heads/main/Ney-Tube.py"
+URL_NEYMENU="https://raw.githubusercontent.com/Koyney/Ney-Menu/refs/heads/main/Ney-Menu.pyw"
+URL_NEYTUBE="https://raw.githubusercontent.com/Koyney/Ney-Tube/refs/heads/main/Ney-Tube.pyw"
 
 PY_DIR="$HOME/.local/Koyney/Ney-Menu"
-NEYMENU_PATH="$HOME/.local/Koyney/Ney-Menu.py"
-NEYTUBE_PATH="$PY_DIR/Ney-Tube.py"
+NEYMENU_PATH="$HOME/.local/Koyney/Ney-Menu.pyw"
+NEYTUBE_PATH="$PY_DIR/Ney-Tube.pyw"
 COFLIX_PATH="$PY_DIR/Co-flix.py"
 
 _CACHE_DIR="${TMPDIR:-/data/data/com.termux/files/usr/tmp}/ney-status-cache"
@@ -343,8 +343,8 @@ print_menu() {
 
     # ── Section ÉTAT DES FICHIERS ─────────────────────────────────────────────
     sec_hdr "${C1}" "ÉTAT DES FICHIERS"
-    file_status_line "$NEYMENU_PATH" "$URL_NEYMENU" "Ney-Menu.py"
-    file_status_line "$NEYTUBE_PATH" "$URL_NEYTUBE" "Ney-Tube.py"
+    file_status_line "$NEYMENU_PATH" "$URL_NEYMENU" "Ney-Menu.pyw"
+    file_status_line "$NEYTUBE_PATH" "$URL_NEYTUBE" "Ney-Tube.pyw"
     file_status_coflix   # affiché seulement si Co-flix.py existe
     nl
 
@@ -443,11 +443,11 @@ setup_shortcuts() {
 
     cat > "$HOME/.shortcuts/NEY-MENU.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-python3 ~/.local/Koyney/Ney-Menu.py
+python3 ~/.local/Koyney/Ney-Menu.pyw
 EOF
     cat > "$HOME/.shortcuts/NEY-TUBE-YouTube.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
-python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.py
+python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.pyw
 EOF
     cat > "$HOME/.shortcuts/NEY-UPDATE.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
@@ -492,8 +492,8 @@ setup_alias() {
         # Bloc de base (cache-buster intégré dans neyupdate)
         cat >> "$HOME/.bashrc" << 'ALIASES'
 # ── KOYNEY START ──────────────────────────────────────
-alias ney="python3 ~/.local/Koyney/Ney-Menu.py"
-alias neytube="python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.py"
+alias ney="python3 ~/.local/Koyney/Ney-Menu.pyw"
+alias neytube="python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.pyw"
 alias neyupdate='curl -sL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh?t=$(date +%s)" -o ~/Ney-install.sh && chmod +x ~/Ney-install.sh && bash ~/Ney-install.sh'
 ALIASES
         # Alias coflix ajouté uniquement si Co-flix.py existe
@@ -513,7 +513,7 @@ uninstall_all() {
     section "Désinstallation complète"
     nl
     echo -e "  ${C3}Éléments ciblés :${RESET}"
-    echo -e "  ${DIM}  ~/.local/Koyney/Ney-Menu.py${RESET}"
+    echo -e "  ${DIM}  ~/.local/Koyney/Ney-Menu.pyw${RESET}"
     echo -e "  ${DIM}  ~/.local/Koyney/Ney-Menu/${RESET}"
     echo -e "  ${DIM}  ~/.shortcuts/NEY-*.sh${RESET}"
     echo -e "  ${DIM}  Alias Koyney dans ~/.bashrc${RESET}"
@@ -562,8 +562,8 @@ full_install() {
 update_all_scripts() {
     clr; banner
     section "Mise à jour de tous les scripts"
-    fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.py"
-    fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.py"
+    fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.pyw"
+    fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.pyw"
     _check_coflix_tor
     nl; pause
 }
@@ -584,8 +584,8 @@ while true; do
     read -r choice
 
     case "$choice" in
-        1) clr; banner; fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.py"; nl; pause ;;
-        2) clr; banner; fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.py"; nl; pause ;;
+        1) clr; banner; fetch_script "$URL_NEYMENU" "$NEYMENU_PATH" "Ney-Menu.pyw"; nl; pause ;;
+        2) clr; banner; fetch_script "$URL_NEYTUBE" "$NEYTUBE_PATH" "Ney-Tube.pyw"; nl; pause ;;
         3) full_install ;;
         4) update_all_scripts ;;
         5) clr; banner; setup_storage;   nl; pause ;;
