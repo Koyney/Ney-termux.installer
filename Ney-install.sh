@@ -1,27 +1,61 @@
 #!/data/data/com.termux/files/usr/bin/bash
 [ -z "$_NEY_FIXED" ] && sed -i 's/\r//g' "$0" && export _NEY_FIXED=1 && exec bash "$0" "$@"
 # ═══════════════════════════════════════════════════════════════════════════════
-#   NEY-INSTALL  v4.0  —  Installateur Koyney pour Termux
+#   NEY-INSTALL  v4.2  —  Installateur Koyney pour Termux
 #   Menu dense avec statut en temps réel  •  Actions par script  •  Thème/heure
 # ═══════════════════════════════════════════════════════════════════════════════
 
-SELF_URL="https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh"
+SELF_RAW="https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh"
 SELF_PATH="$(realpath "$0" 2>/dev/null || echo "$0")"
+
+# ── Construit une URL avec cache-buster (timestamp) ───────────────────────────
+_nocache_url() {
+    printf '%s?t=%s' "$1" "$(date +%s)"
+}
+
+# ── Résout le SHA du dernier commit via l'API GitHub (fallback : URL brute) ───
+_resolve_url() {
+    local sha
+    sha=$(curl -sf \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        "https://api.github.com/repos/Koyney/Ney-termux.installer/commits/main" \
+        2>/dev/null | grep '"sha"' | head -1 | cut -d'"' -f4)
+    if [ -n "$sha" ] && [ "${#sha}" -ge 7 ]; then
+        printf 'https://raw.githubusercontent.com/Koyney/Ney-termux.installer/%s/Ney-install.sh' "$sha"
+    else
+        _nocache_url "$SELF_RAW"
+    fi
+}
 
 _self_update() {
     printf '\033[2m  › Vérification Ney-install.sh...\033[0m\n'
+
+    # Résolution de l'URL réelle (SHA ou cache-buster)
+    local SELF_URL
+    SELF_URL=$(_resolve_url)
+
     local http_code
-    http_code=$(curl -sLo /dev/null -w "%{http_code}" "$SELF_URL" 2>/dev/null)
+    http_code=$(curl -sLo /dev/null \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        -w "%{http_code}" "$SELF_URL" 2>/dev/null)
+
     if [ "$http_code" != "200" ]; then
         printf '\033[33m  ⚠ Code HTTP %s — script local conservé.\033[0m\n\n' "$http_code"
         sleep 0.6
         return
     fi
+
     local tmpdir="${TMPDIR:-/data/data/com.termux/files/usr/tmp}"
     mkdir -p "$tmpdir" 2>/dev/null
     local tmp
     tmp=$(mktemp "${tmpdir}/ney-install-XXXXXX.sh")
-    if curl -sL -o "$tmp" "$SELF_URL" 2>/dev/null && [ -s "$tmp" ]; then
+
+    if curl -sL \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        -o "$tmp" "$SELF_URL" 2>/dev/null && [ -s "$tmp" ]; then
         sed -i 's/\r//g' "$tmp"
         chmod +x "$tmp"
         cp "$tmp" "$SELF_PATH" 2>/dev/null || true
@@ -40,7 +74,7 @@ if [ "$1" != "--no-update" ]; then
     _self_update
 fi
 
-VERSION="4.1"
+VERSION="4.2"
 RESET='\033[0m'; BOLD='\033[1m'; DIM='\033[2m'; ITALIC='\033[3m'
 
 HOUR=$(date +%H); START_TIME=$(date +"%H:%M"); START_DATE=$(date +"%d/%m/%Y")
@@ -95,7 +129,10 @@ _cached_remote_size() {
         fi
     fi
     local rsize
-    rsize=$(curl -sLI "$url" 2>/dev/null \
+    rsize=$(curl -sLI \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        "$(_nocache_url "$url")" 2>/dev/null \
         | grep -i "^content-length:" | tail -1 \
         | awk '{print $2}' | tr -d '\r\n')
     printf '%s' "$rsize" > "$cache_file"
@@ -152,7 +189,10 @@ section()  { echo -e "\n  ${ARR} ${BOLD}${C1}$1${RESET}"; sep_l; }
 pause()    { printf "  ${DIM}Entrée pour continuer...${RESET} "; read -r; }
 
 remote_size() {
-    curl -sLI "$1" 2>/dev/null \
+    curl -sLI \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        "$(_nocache_url "$1")" 2>/dev/null \
         | grep -i "^content-length:" | tail -1 \
         | awk '{print $2}' | tr -d '\r\n'
 }
@@ -224,7 +264,15 @@ progress_bar() {
 
 fetch_script() {
     local url="$1" dest="$2" label="$3"; nl
-    local rsize=$(remote_size "$url")
+    local fetch_url
+    fetch_url=$(_nocache_url "$url")
+    local rsize
+    rsize=$(curl -sLI \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        "$fetch_url" 2>/dev/null \
+        | grep -i "^content-length:" | tail -1 \
+        | awk '{print $2}' | tr -d '\r\n')
 
     if [ -f "$dest" ] && [ -n "$rsize" ] && [ "$rsize" != "0" ]; then
         local lsize=$(wc -c < "$dest" | tr -d ' ')
@@ -242,7 +290,10 @@ fetch_script() {
 
     mkdir -p "$(dirname "$dest")"
     progress_bar "$label"
-    if curl -sL -o "$dest" "$url"; then
+    if curl -sL \
+        -H "Cache-Control: no-cache, no-store" \
+        -H "Pragma: no-cache" \
+        -o "$dest" "$fetch_url"; then
         local nsize=$(wc -c < "$dest" | tr -d ' ')
         line_ok "${BOLD}${label}${RESET}${C1} — OK${RESET} ${DIM}(${nsize}o)${RESET}"
         chmod +x "$dest"
@@ -406,7 +457,11 @@ EOF
     cat > "$HOME/.shortcuts/NEY-UPDATE.sh" << 'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
 SELF="$HOME/Ney-install.sh"
-curl -sL "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh" -o "$SELF" \
+curl -sL \
+    -H "Cache-Control: no-cache, no-store" \
+    -H "Pragma: no-cache" \
+    "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh?t=$(date +%s)" \
+    -o "$SELF" \
     && chmod +x "$SELF" && echo "✔ Ney-install.sh mis à jour" && bash "$SELF"
 EOF
 
@@ -439,12 +494,12 @@ setup_alias() {
     read -r ch; [ -z "$ch" ] && ch="o"
     if [ "$ch" = "o" ] || [ "$ch" = "O" ] || [ "$ch" = "y" ]; then
         sed -i '/# ── KOYNEY START/,/# ── KOYNEY END/d' "$HOME/.bashrc" 2>/dev/null
-        # Bloc de base
+        # Bloc de base (cache-buster intégré dans neyupdate)
         cat >> "$HOME/.bashrc" << 'ALIASES'
 # ── KOYNEY START ──────────────────────────────────────
 alias ney="python3 ~/.local/Koyney/Ney-Menu.py"
 alias neytube="python3 ~/.local/Koyney/Ney-Menu/Ney-Tube.py"
-alias neyupdate="curl -sL 'https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh' -o ~/Ney-install.sh && chmod +x ~/Ney-install.sh && bash ~/Ney-install.sh"
+alias neyupdate='curl -sL -H "Cache-Control: no-cache, no-store" -H "Pragma: no-cache" "https://raw.githubusercontent.com/Koyney/Ney-termux.installer/refs/heads/main/Ney-install.sh?t=$(date +%s)" -o ~/Ney-install.sh && chmod +x ~/Ney-install.sh && bash ~/Ney-install.sh'
 ALIASES
         # Alias neyflix ajouté uniquement si Co-flix.py existe
         if [ -f "$NEYFLIX_PATH" ]; then
